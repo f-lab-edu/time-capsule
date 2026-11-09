@@ -1,8 +1,6 @@
 package com.project.timecapsule;
 
 import com.project.timecapsule.capsule.Capsule;
-import com.project.timecapsule.enums.CapsuleMode;
-import com.project.timecapsule.enums.CapsuleStatus;
 import com.project.timecapsule.enums.ErrorCode;
 import com.project.timecapsule.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,25 +30,17 @@ class CapsuleCreateTest {
         String placeName = "서울숲";
         double latitude = 37.5496;
         double longitude = 127.0416;
+        Capsule expected = Capsule.single(
+                singleUser.getId(), title, openAt, placeName, latitude, longitude);
 
         // when
-        Capsule capsule = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
+        Capsule actual = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
 
         // then
-        // 캡슐을 생성한 사용자
-        assertThat(capsule.getCreatedBy()).isEqualTo(singleUser.getId());
-
-        // 입력한 값이 그대로 저장
-        assertThat(capsule.getTitle()).isEqualTo(title);
-        assertThat(capsule.getOpenAt()).isEqualTo(openAt);
-        assertThat(capsule.getPlaceName()).isEqualTo(placeName);
-        assertThat(capsule.getLatitude()).isEqualTo(latitude);
-        assertThat(capsule.getLongitude()).isEqualTo(longitude);
-
-        // 싱글 캡슐로 생성
-        assertThat(capsule.getMode()).isEqualTo(CapsuleMode.SINGLE);
-        assertThat(capsule.getMaxMembers()).isEqualTo(1);
-        assertThat(capsule.getStatus()).isEqualTo(CapsuleStatus.DRAFT);
+        assertThat(actual)
+                .usingRecursiveComparison()
+                .ignoringFields("id", "createdAt")
+                .isEqualTo(expected);
     }
 
     @Test

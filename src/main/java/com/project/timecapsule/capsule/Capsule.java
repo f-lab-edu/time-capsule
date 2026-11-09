@@ -3,13 +3,11 @@ package com.project.timecapsule.capsule;
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.CapsuleStatus;
 import com.project.timecapsule.enums.ErrorCode;
-import lombok.Getter;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Getter
 public class Capsule {
 
     private final UUID id;
