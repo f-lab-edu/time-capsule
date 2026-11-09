@@ -6,11 +6,14 @@ import com.project.timecapsule.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mockStatic;
 
 @DisplayName("캡슐 생성 테스트")
 class CapsuleCreateTest {
@@ -30,17 +33,22 @@ class CapsuleCreateTest {
         String placeName = "서울숲";
         double latitude = 37.5496;
         double longitude = 127.0416;
-        Capsule expected = Capsule.single(
-                singleUser.getId(), title, openAt, placeName, latitude, longitude);
+        UUID fixedId = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
-        // when
-        Capsule actual = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
+        try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
+            mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
+            Capsule expected = Capsule.single(
+                    singleUser.getId(), title, openAt, placeName, latitude, longitude);
 
-        // then
-        assertThat(actual)
-                .usingRecursiveComparison()
-                .ignoringFields("id", "createdAt")
-                .isEqualTo(expected);
+            // when
+            Capsule actual = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
+
+            // then
+            assertThat(actual)
+                    .usingRecursiveComparison()
+                    .ignoringFields("createdAt")
+                    .isEqualTo(expected);
+        }
     }
 
     @Test
