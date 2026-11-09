@@ -3,15 +3,16 @@ package com.project.timecapsule;
 import com.project.timecapsule.capsule.Capsule;
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.CapsuleStatus;
+import com.project.timecapsule.enums.ErrorCode;
 import com.project.timecapsule.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("캡슐 생성 테스트")
 class CapsuleCreateTest {
@@ -64,19 +65,16 @@ class CapsuleCreateTest {
     void 캡슐_제목이_유효하지_않으면_캡슐을_생성할_수_없다() {
         // given
         String[] invalidTitles = {null, "   ", "123456789012345678901234567890123456789012345678901"};
+        ErrorCode[] expectedErrors = {ErrorCode.TITLE_REQUIRED, ErrorCode.TITLE_REQUIRED, ErrorCode.TITLE_TOO_LONG};
         LocalDateTime openAt = LocalDateTime.now().plusYears(1);
 
-        for (String title : invalidTitles) {
-            // when
-            IllegalArgumentException exception = null;
-            try {
-                singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
-            } catch (IllegalArgumentException e) {
-                exception = e;
-            }
+        for (int i = 0; i < invalidTitles.length; i++) {
+            String title = invalidTitles[i];
 
-            // then
-            assertThat(exception).isNotNull();
+            // when, then
+            assertThatThrownBy(() -> singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(expectedErrors[i].getMessage());
         }
     }
 
@@ -101,18 +99,16 @@ class CapsuleCreateTest {
         // given
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime[] invalidOpenTimes = {null, now.minusDays(1), now, now.plusYears(11)};
+        ErrorCode[] expectedErrors = {ErrorCode.OPEN_AT_REQUIRED, ErrorCode.OPEN_AT_NOT_IN_FUTURE,
+                ErrorCode.OPEN_AT_NOT_IN_FUTURE, ErrorCode.OPEN_AT_TOO_FAR_IN_FUTURE};
 
-        for (LocalDateTime openAt : invalidOpenTimes) {
-            // when
-            IllegalArgumentException exception = null;
-            try {
-                singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
-            } catch (IllegalArgumentException e) {
-                exception = e;
-            }
+        for (int i = 0; i < invalidOpenTimes.length; i++) {
+            LocalDateTime openAt = invalidOpenTimes[i];
 
-            // then
-            assertThat(exception).isNotNull();
+            // when, then
+            assertThatThrownBy(() -> singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(expectedErrors[i].getMessage());
         }
     }
 
