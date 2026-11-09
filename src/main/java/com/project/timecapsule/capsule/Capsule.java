@@ -2,6 +2,7 @@ package com.project.timecapsule.capsule;
 
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.CapsuleStatus;
+import com.project.timecapsule.enums.ErrorCode;
 import lombok.Getter;
 import org.springframework.util.StringUtils;
 
@@ -65,22 +66,22 @@ public class Capsule {
 
     private static void validateTitle(String title) {
         if (!StringUtils.hasText(title)) {
-            throw new IllegalArgumentException("캡슐 제목은 필수입니다.");
+            throw new IllegalArgumentException(ErrorCode.TITLE_REQUIRED.getMessage());
         }
         if (title.length() > 50) {
-            throw new IllegalArgumentException("캡슐 제목은 50자 이하여야 합니다.");
+            throw new IllegalArgumentException(ErrorCode.TITLE_TOO_LONG.getMessage());
         }
     }
 
     private static void validateOpenAt(LocalDateTime openAt, LocalDateTime createdAt) {
         if (openAt == null) {
-            throw new IllegalArgumentException("캡슐 오픈 시각을 입력해야 합니다.");
+            throw new IllegalArgumentException(ErrorCode.OPEN_AT_REQUIRED.getMessage());
         }
         if (!openAt.isAfter(createdAt)) {
-            throw new IllegalArgumentException("캡슐 오픈 시각은 캡슐 생성 시각보다 미래여야 합니다.");
+            throw new IllegalArgumentException(ErrorCode.OPEN_AT_NOT_IN_FUTURE.getMessage());
         }
         if (openAt.isAfter(createdAt.plusYears(10))) {
-            throw new IllegalArgumentException("캡슐 오픈 시각은 캡슐 생성 시각으로부터 10년 이내여야 합니다.");
+            throw new IllegalArgumentException(ErrorCode.OPEN_AT_TOO_FAR_IN_FUTURE.getMessage());
         }
     }
 
