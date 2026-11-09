@@ -16,13 +16,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("캡슐 생성 테스트")
 class CapsuleCreateTest {
 
-    private UUID singleUserId;
     private User singleUser;
 
     @BeforeEach
     void beforeEach() {
-        singleUserId = UUID.randomUUID();
-        singleUser = new User(singleUserId, "싱글유저", "password");
+        singleUser = new User("싱글유저", "password");
     }
 
     @Test
@@ -38,10 +36,20 @@ class CapsuleCreateTest {
         Capsule capsule = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
 
         // then
-        assertThat(capsule.isCreatedBy(singleUserId)).isTrue();
-        assertThat(capsule)
-                .extracting("mode", "maxMembers", "status")
-                .containsExactly(CapsuleMode.SINGLE, 1, CapsuleStatus.DRAFT);
+        // 캡슐을 생성한 사용자
+        assertThat(capsule.getCreatedBy()).isEqualTo(singleUser.getId());
+
+        // 입력한 값이 그대로 저장
+        assertThat(capsule.getTitle()).isEqualTo(title);
+        assertThat(capsule.getOpenAt()).isEqualTo(openAt);
+        assertThat(capsule.getPlaceName()).isEqualTo(placeName);
+        assertThat(capsule.getLatitude()).isEqualTo(latitude);
+        assertThat(capsule.getLongitude()).isEqualTo(longitude);
+
+        // 싱글 캡슐로 생성
+        assertThat(capsule.getMode()).isEqualTo(CapsuleMode.SINGLE);
+        assertThat(capsule.getMaxMembers()).isEqualTo(1);
+        assertThat(capsule.getStatus()).isEqualTo(CapsuleStatus.DRAFT);
     }
 
     @Test

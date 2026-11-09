@@ -2,11 +2,13 @@ package com.project.timecapsule.capsule;
 
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.CapsuleStatus;
+import lombok.Getter;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Getter
 public class Capsule {
 
     private final UUID id;
@@ -59,10 +61,6 @@ public class Capsule {
                                  String placeName, double latitude, double longitude) {
         return new Capsule(createdBy, title, CapsuleMode.SINGLE, 1,
                 openAt, placeName, latitude, longitude);
-    }
-
-    public boolean isCreatedBy(UUID userId) {
-        return createdBy.equals(userId);
     }
 
     private static void validateTitle(String title) {
