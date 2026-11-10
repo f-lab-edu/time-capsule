@@ -1,13 +1,54 @@
 package com.project.timecapsule;
 
+import com.project.timecapsule.capsule.Capsule;
+import com.project.timecapsule.enums.ErrorCode;
+import com.project.timecapsule.user.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mockStatic;
 
 @DisplayName("캡슐 생성 테스트")
 class CapsuleCreateTest {
 
+    private User singleUser;
+
+    @BeforeEach
+    void beforeEach() {
+        singleUser = new User("싱글유저", "password");
+    }
+
     @Test
     void 싱글_캡슐을_생성할_수_있다() {
+        // given
+        String title = "싱글 캡슐";
+        LocalDateTime openAt = LocalDateTime.now().plusYears(1);
+        String placeName = "서울숲";
+        double latitude = 37.5496;
+        double longitude = 127.0416;
+        UUID fixedId = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+        try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
+            mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
+            Capsule expected = Capsule.single(
+                    singleUser.getId(), title, openAt, placeName, latitude, longitude);
+
+            // when
+            Capsule actual = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
+
+            // then
+            assertThat(actual)
+                    .usingRecursiveComparison()
+                    .ignoringFields("createdAt")
+                    .isEqualTo(expected);
+        }
     }
 
     @Test
@@ -19,23 +60,69 @@ class CapsuleCreateTest {
     }
 
     @Test
-    void 필수_정보가_빠지면_생성할_수_없다() {
+    void 캡슐_제목이_유효하지_않으면_캡슐을_생성할_수_없다() {
+        // given
+        String[] invalidTitles = {null, "   ", "123456789012345678901234567890123456789012345678901"};
+        ErrorCode[] expectedErrors = {ErrorCode.TITLE_REQUIRED, ErrorCode.TITLE_REQUIRED, ErrorCode.TITLE_TOO_LONG};
+        LocalDateTime openAt = LocalDateTime.now().plusYears(1);
+
+        for (int i = 0; i < invalidTitles.length; i++) {
+            String title = invalidTitles[i];
+
+            // when, then
+            assertThatThrownBy(() -> singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(expectedErrors[i].getMessage());
+        }
     }
 
     @Test
-    void 제목이_비어있으면_생성할_수_없다() {
+    void 캡슐_제목이_비어있지_않고_50자_이하이면_캡슐을_생성할_수_있다() {
+        // given
+        String[] validTitles = {"1", "12345678901234567890123456789012345678901234567890"};
+
+        LocalDateTime openAt = LocalDateTime.now().plusYears(1);
+
+        for (String title : validTitles) {
+            // when
+            Capsule capsule = singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
+
+            // then
+            assertThat(capsule).isNotNull();
+        }
     }
 
     @Test
-    void 제목이_최대_길이를_초과하면_생성할_수_없다() {
+    void 캡슐_오픈_시각이_생성_시각_이전이거나_10년_이후라면_캡슐을_생성할_수_없다() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime[] invalidOpenTimes = {null, now.minusDays(1), now, now.plusYears(11)};
+        ErrorCode[] expectedErrors = {ErrorCode.OPEN_AT_REQUIRED, ErrorCode.OPEN_AT_NOT_IN_FUTURE,
+                ErrorCode.OPEN_AT_NOT_IN_FUTURE, ErrorCode.OPEN_AT_TOO_FAR_IN_FUTURE};
+
+        for (int i = 0; i < invalidOpenTimes.length; i++) {
+            LocalDateTime openAt = invalidOpenTimes[i];
+
+            // when, then
+            assertThatThrownBy(() -> singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage(expectedErrors[i].getMessage());
+        }
     }
 
     @Test
-    void 개봉_시각이_캡슐_생성_시각과_같거나_이전이면_생성할_수_없다() {
-    }
+    void 캡슐_오픈_시각이_생성_시각_이후이고_10년_이내이면_캡슐을_생성할_수_있다() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime[] validOpenTimes = {now.plusDays(1), now.plusYears(10)};
 
-    @Test
-    void 개봉_시각이_서비스_허용_기간을_넘으면_생성할_수_없다() {
+        for (LocalDateTime openAt : validOpenTimes) {
+            // when
+            Capsule capsule = singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
+
+            // then
+            assertThat(capsule).isNotNull();
+        }
     }
 
     @Test
