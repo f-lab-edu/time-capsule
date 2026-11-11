@@ -43,7 +43,7 @@ class CapsuleCreateTest {
                     singleUser.getId(), title, openAt, placeName, latitude, longitude);
 
             // when
-            Capsule actual = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
+            Capsule actual = singleUser.createCapsule(title, openAt, placeName, latitude, longitude);
 
             // then
             assertThat(actual)
@@ -72,7 +72,7 @@ class CapsuleCreateTest {
                     multiUser.getId(), title, openAt, placeName, latitude, longitude, maxMembers, buryDeadlineAt);
 
             // when
-            Capsule actual = multiUser.createMultiCapsule(title, openAt, placeName, latitude, longitude,
+            Capsule actual = multiUser.createCapsule(title, openAt, placeName, latitude, longitude,
                     maxMembers, buryDeadlineAt);
 
             // then
@@ -91,7 +91,7 @@ class CapsuleCreateTest {
         LocalDateTime openAt = now.plusYears(1);
 
         // when
-        Capsule capsule = multiUser.createMultiCapsule("멀티 캡슐", openAt, "서울숲",
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲",
                 37.5496, 127.0416, 5, buryDeadlineAt);
 
         // then
@@ -109,7 +109,7 @@ class CapsuleCreateTest {
             String title = invalidTitles[i];
 
             // when, then
-            assertThatThrownBy(() -> singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
+            assertThatThrownBy(() -> singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage(expectedErrors[i].getMessage());
         }
@@ -124,7 +124,7 @@ class CapsuleCreateTest {
 
         for (String title : validTitles) {
             // when
-            Capsule capsule = singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
+            Capsule capsule = singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
 
             // then
             assertThat(capsule).isNotNull();
@@ -143,7 +143,7 @@ class CapsuleCreateTest {
             LocalDateTime openAt = invalidOpenTimes[i];
 
             // when, then
-            assertThatThrownBy(() -> singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
+            assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage(expectedErrors[i].getMessage());
         }
@@ -157,7 +157,7 @@ class CapsuleCreateTest {
 
         for (LocalDateTime openAt : validOpenTimes) {
             // when
-            Capsule capsule = singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
+            Capsule capsule = singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
 
             // then
             assertThat(capsule).isNotNull();
@@ -173,7 +173,7 @@ class CapsuleCreateTest {
 
         for (LocalDateTime buryDeadlineAt : invalidBuryTimes) {
             // when, then
-            assertThatThrownBy(() -> multiUser.createMultiCapsule(
+            assertThatThrownBy(() -> multiUser.createCapsule(
                     "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
                     .isInstanceOf(IllegalArgumentException.class);
         }
@@ -187,7 +187,7 @@ class CapsuleCreateTest {
 
         for (LocalDateTime buryDeadlineAt : invalidBuryTimes) {
             // when, then
-            assertThatThrownBy(() -> multiUser.createMultiCapsule(
+            assertThatThrownBy(() -> multiUser.createCapsule(
                     "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
                     .isInstanceOf(IllegalArgumentException.class);
         }
@@ -201,7 +201,7 @@ class CapsuleCreateTest {
         LocalDateTime buryDeadlineAt = now.plusDays(14).plusMinutes(1);
 
         // when, then
-        assertThatThrownBy(() -> multiUser.createMultiCapsule(
+        assertThatThrownBy(() -> multiUser.createCapsule(
                 "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
                 .isInstanceOf(IllegalArgumentException.class);
     }
@@ -214,7 +214,7 @@ class CapsuleCreateTest {
         LocalDateTime buryDeadlineAt = now.plusDays(14);
 
         // when
-        Capsule capsule = multiUser.createMultiCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
                 5, buryDeadlineAt);
 
         // then
@@ -239,7 +239,7 @@ class CapsuleCreateTest {
 
         for (int maxMembers : invalidMaxMembers) {
             // when, then
-            assertThatThrownBy(() -> multiUser.createMultiCapsule(
+            assertThatThrownBy(() -> multiUser.createCapsule(
                     "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, maxMembers, buryDeadlineAt))
                     .isInstanceOf(IllegalArgumentException.class);
         }
@@ -255,7 +255,7 @@ class CapsuleCreateTest {
 
         for (int maxMembers : validMaxMembers) {
             // when
-            Capsule capsule = multiUser.createMultiCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+            Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
                     maxMembers, buryDeadlineAt);
 
             // then
