@@ -19,10 +19,12 @@ import static org.mockito.Mockito.mockStatic;
 class CapsuleCreateTest {
 
     private User singleUser;
+    private User multiUser;
 
     @BeforeEach
     void beforeEach() {
         singleUser = new User("싱글유저", "password");
+        multiUser = new User("멀티유저", "password");
     }
 
     @Test
@@ -41,7 +43,7 @@ class CapsuleCreateTest {
                     singleUser.getId(), title, openAt, placeName, latitude, longitude);
 
             // when
-            Capsule actual = singleUser.createSingleCapsule(title, openAt, placeName, latitude, longitude);
+            Capsule actual = singleUser.createCapsule(title, openAt, placeName, latitude, longitude);
 
             // then
             assertThat(actual)
@@ -53,10 +55,47 @@ class CapsuleCreateTest {
 
     @Test
     void 멀티_캡슐을_생성할_수_있다() {
+        // given
+        String title = "멀티 캡슐";
+        int maxMembers = 5;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime buryDeadlineAt = now.plusDays(7);
+        LocalDateTime openAt = now.plusYears(1);
+        String placeName = "서울숲";
+        double latitude = 37.5496;
+        double longitude = 127.0416;
+        UUID fixedId = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
+        try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
+            mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
+            Capsule expected = Capsule.multi(
+                    multiUser.getId(), title, openAt, placeName, latitude, longitude, maxMembers, buryDeadlineAt);
+
+            // when
+            Capsule actual = multiUser.createCapsule(title, openAt, placeName, latitude, longitude,
+                    maxMembers, buryDeadlineAt);
+
+            // then
+            assertThat(actual)
+                    .usingRecursiveComparison()
+                    .ignoringFields("createdAt")
+                    .isEqualTo(expected);
+        }
     }
 
     @Test
     void 멀티_캡슐을_만든_생성자가_방장이_된다() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime buryDeadlineAt = now.plusDays(7);
+        LocalDateTime openAt = now.plusYears(1);
+
+        // when
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲",
+                37.5496, 127.0416, 5, buryDeadlineAt);
+
+        // then
+        assertThat(capsule.isHost(multiUser.getId())).isTrue();
     }
 
     @Test
@@ -70,7 +109,7 @@ class CapsuleCreateTest {
             String title = invalidTitles[i];
 
             // when, then
-            assertThatThrownBy(() -> singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
+            assertThatThrownBy(() -> singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage(expectedErrors[i].getMessage());
         }
@@ -85,7 +124,7 @@ class CapsuleCreateTest {
 
         for (String title : validTitles) {
             // when
-            Capsule capsule = singleUser.createSingleCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
+            Capsule capsule = singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
 
             // then
             assertThat(capsule).isNotNull();
@@ -104,7 +143,7 @@ class CapsuleCreateTest {
             LocalDateTime openAt = invalidOpenTimes[i];
 
             // when, then
-            assertThatThrownBy(() -> singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
+            assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage(expectedErrors[i].getMessage());
         }
@@ -118,7 +157,7 @@ class CapsuleCreateTest {
 
         for (LocalDateTime openAt : validOpenTimes) {
             // when
-            Capsule capsule = singleUser.createSingleCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
+            Capsule capsule = singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
 
             // then
             assertThat(capsule).isNotNull();
@@ -126,15 +165,60 @@ class CapsuleCreateTest {
     }
 
     @Test
-    void 묻기_예정_시각이_현재보다_과거면_생성할_수_없다() {
+    void 묻기_예정_시각이_캡슐_생성_시각과_같거나_과거라면_캡슐을_생성할_수_없다() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime openAt = now.plusYears(1);
+        LocalDateTime[] invalidBuryTimes = {null, now.minusDays(1), now};
+
+        for (LocalDateTime buryDeadlineAt : invalidBuryTimes) {
+            // when, then
+            assertThatThrownBy(() -> multiUser.createCapsule(
+                    "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 
     @Test
-    void 묻기_예정_시각이_개봉_예정_시각과_같거나_늦으면_생성할_수_없다() {
+    void 묻기_예정_시각이_캡슐_개봉_예정_시각과_같거나_늦으면_캡슐을_생성할_수_없다() {
+        // given
+        LocalDateTime openAt = LocalDateTime.now().plusDays(7);
+        LocalDateTime[] invalidBuryTimes = {openAt, openAt.plusMinutes(1)};
+
+        for (LocalDateTime buryDeadlineAt : invalidBuryTimes) {
+            // when, then
+            assertThatThrownBy(() -> multiUser.createCapsule(
+                    "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
     }
 
     @Test
-    void 싱글_캡슐에는_묻기_예정_시각을_설정할_수_없다() {
+    void 묻기_예정_시각이_생성_시각으로부터_14일을_초과하면_캡슐을_생성할_수_없다() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime openAt = now.plusYears(1);
+        LocalDateTime buryDeadlineAt = now.plusDays(14).plusMinutes(1);
+
+        // when, then
+        assertThatThrownBy(() -> multiUser.createCapsule(
+                "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void 묻기_예정_시각이_생성_시각_이후_14일_이내이고_개봉_예정_시각_이전이면_캡슐을_생성할_수_있다() {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime openAt = now.plusYears(1);
+        LocalDateTime buryDeadlineAt = now.plusDays(14);
+
+        // when
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+                5, buryDeadlineAt);
+
+        // then
+        assertThat(capsule).isNotNull();
     }
 
     @Test
@@ -146,7 +230,37 @@ class CapsuleCreateTest {
     }
 
     @Test
-    void 멀티_캡슐_정원이_2명_미만_20명_초과라면_생성할_수_없다() {
+    void 멀티_캡슐_정원이_2명_미만이거나_20명_초과라면_캡슐을_생성할_수_없다() {
+        // given
+        int[] invalidMaxMembers = {1, 21};
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime buryDeadlineAt = now.plusDays(7);
+        LocalDateTime openAt = now.plusYears(1);
+
+        for (int maxMembers : invalidMaxMembers) {
+            // when, then
+            assertThatThrownBy(() -> multiUser.createCapsule(
+                    "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, maxMembers, buryDeadlineAt))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
+    void 멀티_캡슐_정원이_2명_이상_20명_이하이면_캡슐을_생성할_수_있다() {
+        // given
+        int[] validMaxMembers = {2, 20};
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime buryDeadlineAt = now.plusDays(7);
+        LocalDateTime openAt = now.plusYears(1);
+
+        for (int maxMembers : validMaxMembers) {
+            // when
+            Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+                    maxMembers, buryDeadlineAt);
+
+            // then
+            assertThat(capsule).isNotNull();
+        }
     }
 
     @Test

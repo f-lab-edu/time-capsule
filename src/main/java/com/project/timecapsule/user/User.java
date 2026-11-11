@@ -19,8 +19,14 @@ public class User {
         this.password = password;
     }
 
-    public Capsule createSingleCapsule(String title, LocalDateTime openAt,
-                                       String placeName, double latitude, double longitude) {
+    public Capsule createCapsule(String title, LocalDateTime openAt,
+                                 String placeName, double latitude, double longitude) {
         return Capsule.single(id, title, openAt, placeName, latitude, longitude);
+    }
+
+    public Capsule createCapsule(String title, LocalDateTime openAt,
+                                 String placeName, double latitude, double longitude,
+                                 int maxMembers, LocalDateTime buryDeadlineAt) {
+        return Capsule.multi(id, title, openAt, placeName, latitude, longitude, maxMembers, buryDeadlineAt);
     }
 }
