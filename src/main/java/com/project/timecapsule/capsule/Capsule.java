@@ -8,14 +8,13 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Capsule {
+public abstract class Capsule {
 
     private final UUID id;
     private final String title;
     private final CapsuleMode mode;
     private final int maxMembers;
     private CapsuleStatus status;
-    private final LocalDateTime buryDeadlineAt;
     private final LocalDateTime openAt;
 
     private final String placeName;
@@ -30,25 +29,19 @@ public class Capsule {
     private LocalDateTime deletedAt;
     private UUID deletedBy;
 
-    private Capsule(UUID createdBy, String title, CapsuleMode mode, int maxMembers,
-                    LocalDateTime buryDeadlineAt, LocalDateTime openAt,
-                    String placeName, double latitude, double longitude) {
+    Capsule(UUID createdBy, String title, CapsuleMode mode, int maxMembers,
+            LocalDateTime openAt, String placeName, double latitude, double longitude) {
         LocalDateTime createdAt = LocalDateTime.now();
 
         //검증
         validateTitle(title);
         validateOpenAt(openAt, createdAt);
-        if (mode == CapsuleMode.MULTI) {
-            validateMaxMembers(maxMembers);
-            validateBuryDeadlineAt(buryDeadlineAt, openAt, createdAt);
-        }
 
         this.id = UUID.randomUUID();
         this.title = title;
         this.mode = mode;
         this.maxMembers = maxMembers;
         this.status = CapsuleStatus.DRAFT;
-        this.buryDeadlineAt = buryDeadlineAt;
         this.openAt = openAt;
         this.placeName = placeName;
         this.latitude = latitude;
@@ -65,15 +58,14 @@ public class Capsule {
 
     public static Capsule single(UUID createdBy, String title, LocalDateTime openAt,
                                  String placeName, double latitude, double longitude) {
-        return new Capsule(createdBy, title, CapsuleMode.SINGLE, 1,
-                null, openAt, placeName, latitude, longitude);
+        return new SingleCapsule(createdBy, title, openAt, placeName, latitude, longitude);
     }
 
     public static Capsule multi(UUID createdBy, String title, LocalDateTime openAt,
                                 String placeName, double latitude, double longitude,
                                 int maxMembers, LocalDateTime buryDeadlineAt) {
-        return new Capsule(createdBy, title, CapsuleMode.MULTI, maxMembers,
-                buryDeadlineAt, openAt, placeName, latitude, longitude);
+        return new MultiCapsule(createdBy, title, openAt, placeName, latitude, longitude,
+                maxMembers, buryDeadlineAt);
     }
 
     private static void validateTitle(String title) {
@@ -97,31 +89,17 @@ public class Capsule {
         }
     }
 
-    private static void validateMaxMembers(int maxMembers) {
-        if (maxMembers < 2 || maxMembers > 20) {
-            throw new IllegalArgumentException(ErrorCode.MAX_MEMBERS_OUT_OF_RANGE.getMessage());
-        }
+    LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    private static void validateBuryDeadlineAt(LocalDateTime buryDeadlineAt, LocalDateTime openAt,
-                                               LocalDateTime createdAt) {
-        if (buryDeadlineAt == null) {
-            throw new IllegalArgumentException(ErrorCode.BURY_DEADLINE_AT_REQUIRED.getMessage());
-        }
-        if (!buryDeadlineAt.isAfter(createdAt)) {
-            throw new IllegalArgumentException(ErrorCode.BURY_DEADLINE_AT_NOT_IN_FUTURE.getMessage());
-        }
-        if (buryDeadlineAt.isAfter(createdAt.plusDays(14))) {
-            throw new IllegalArgumentException(ErrorCode.BURY_DEADLINE_AT_TOO_FAR_IN_FUTURE.getMessage());
-        }
-        if (!buryDeadlineAt.isBefore(openAt)) {
-            throw new IllegalArgumentException(ErrorCode.BURY_DEADLINE_AT_NOT_BEFORE_OPEN_AT.getMessage());
-        }
+    boolean isCreatedBy(UUID userId) {
+        return createdBy.equals(userId);
     }
 
 
     public boolean isHost(UUID userId) {
-        return mode == CapsuleMode.MULTI && createdBy.equals(userId);
+        return false;
     }
 
 }

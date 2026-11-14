@@ -1,6 +1,8 @@
 package com.project.timecapsule;
 
 import com.project.timecapsule.capsule.Capsule;
+import com.project.timecapsule.capsule.MultiCapsule;
+import com.project.timecapsule.capsule.SingleCapsule;
 import com.project.timecapsule.enums.ErrorCode;
 import com.project.timecapsule.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +48,7 @@ class CapsuleCreateTest {
             Capsule actual = singleUser.createCapsule(title, openAt, placeName, latitude, longitude);
 
             // then
+            assertThat(actual).isInstanceOf(SingleCapsule.class);
             assertThat(actual)
                     .usingRecursiveComparison()
                     .ignoringFields("createdAt")
@@ -76,6 +79,7 @@ class CapsuleCreateTest {
                     maxMembers, buryDeadlineAt);
 
             // then
+            assertThat(actual).isInstanceOf(MultiCapsule.class);
             assertThat(actual)
                     .usingRecursiveComparison()
                     .ignoringFields("createdAt")
