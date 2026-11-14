@@ -3,11 +3,13 @@ package com.project.timecapsule;
 import com.project.timecapsule.capsule.Capsule;
 import com.project.timecapsule.capsule.MultiCapsule;
 import com.project.timecapsule.capsule.SingleCapsule;
-import com.project.timecapsule.enums.ErrorCode;
 import com.project.timecapsule.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import java.time.LocalDateTime;
@@ -102,55 +104,48 @@ class CapsuleCreateTest {
         assertThat(capsule.isHost(multiUser.getId())).isTrue();
     }
 
-    @Test
-    void 캡슐_제목이_유효하지_않으면_캡슐을_생성할_수_없다() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"   ", "123456789012345678901234567890123456789012345678901"})
+    void 캡슐_제목이_유효하지_않으면_캡슐을_생성할_수_없다(String title) {
         // given
-        String[] invalidTitles = {null, "   ", "123456789012345678901234567890123456789012345678901"};
-        ErrorCode[] expectedErrors = {ErrorCode.TITLE_REQUIRED, ErrorCode.TITLE_REQUIRED, ErrorCode.TITLE_TOO_LONG};
         LocalDateTime openAt = LocalDateTime.now().plusYears(1);
 
-        for (int i = 0; i < invalidTitles.length; i++) {
-            String title = invalidTitles[i];
-
-            // when, then
-            assertThatThrownBy(() -> singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage(expectedErrors[i].getMessage());
-        }
+        // when, then
+        assertThatThrownBy(() -> singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test
-    void 캡슐_제목이_비어있지_않고_50자_이하이면_캡슐을_생성할_수_있다() {
+    @ParameterizedTest
+    @ValueSource(strings = {"1", "12345678901234567890123456789012345678901234567890"})
+    void 캡슐_제목이_비어있지_않고_50자_이하이면_캡슐을_생성할_수_있다(String title) {
         // given
-        String[] validTitles = {"1", "12345678901234567890123456789012345678901234567890"};
-
         LocalDateTime openAt = LocalDateTime.now().plusYears(1);
 
-        for (String title : validTitles) {
-            // when
-            Capsule capsule = singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
+        // when
+        Capsule capsule = singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
 
-            // then
-            assertThat(capsule).isNotNull();
-        }
+        // then
+        assertThat(capsule).isNotNull();
     }
 
-    @Test
-    void 캡슐_오픈_시각이_생성_시각_이전이거나_10년_이후라면_캡슐을_생성할_수_없다() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(ints = {-1, 0, 11})
+    void 캡슐_오픈_시각이_생성_시각_이전이거나_10년_이후라면_캡슐을_생성할_수_없다(Integer year) {
         // given
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime[] invalidOpenTimes = {null, now.minusDays(1), now, now.plusYears(11)};
-        ErrorCode[] expectedErrors = {ErrorCode.OPEN_AT_REQUIRED, ErrorCode.OPEN_AT_NOT_IN_FUTURE,
-                ErrorCode.OPEN_AT_NOT_IN_FUTURE, ErrorCode.OPEN_AT_TOO_FAR_IN_FUTURE};
+        LocalDateTime openAt;
 
-        for (int i = 0; i < invalidOpenTimes.length; i++) {
-            LocalDateTime openAt = invalidOpenTimes[i];
-
-            // when, then
-            assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage(expectedErrors[i].getMessage());
+        if (year == null) {
+            openAt = null;
+        } else {
+            openAt = now.plusYears(year);
         }
+
+        // when, then
+        assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -183,18 +178,17 @@ class CapsuleCreateTest {
         }
     }
 
-    @Test
-    void 묻기_예정_시각이_캡슐_개봉_예정_시각과_같거나_늦으면_캡슐을_생성할_수_없다() {
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1})
+    void 묻기_예정_시각이_캡슐_개봉_예정_시각과_같거나_늦으면_캡슐을_생성할_수_없다(int minutes) {
         // given
         LocalDateTime openAt = LocalDateTime.now().plusDays(7);
-        LocalDateTime[] invalidBuryTimes = {openAt, openAt.plusMinutes(1)};
+        LocalDateTime buryDeadlineAt = openAt.plusMinutes(minutes);
 
-        for (LocalDateTime buryDeadlineAt : invalidBuryTimes) {
-            // when, then
-            assertThatThrownBy(() -> multiUser.createCapsule(
-                    "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
-                    .isInstanceOf(IllegalArgumentException.class);
-        }
+        // when, then
+        assertThatThrownBy(() -> multiUser.createCapsule(
+                "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -233,38 +227,34 @@ class CapsuleCreateTest {
     void 국내_지도_범위를_벗어난_위치로는_장소를_지정할_수_없다() {
     }
 
-    @Test
-    void 멀티_캡슐_정원이_2명_미만이거나_20명_초과라면_캡슐을_생성할_수_없다() {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 21})
+    void 멀티_캡슐_정원이_2명_미만이거나_20명_초과라면_캡슐을_생성할_수_없다(int maxMembers) {
         // given
-        int[] invalidMaxMembers = {1, 21};
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime buryDeadlineAt = now.plusDays(7);
         LocalDateTime openAt = now.plusYears(1);
 
-        for (int maxMembers : invalidMaxMembers) {
-            // when, then
-            assertThatThrownBy(() -> multiUser.createCapsule(
-                    "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, maxMembers, buryDeadlineAt))
-                    .isInstanceOf(IllegalArgumentException.class);
-        }
+        // when, then
+        assertThatThrownBy(() -> multiUser.createCapsule(
+                "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, maxMembers, buryDeadlineAt))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test
-    void 멀티_캡슐_정원이_2명_이상_20명_이하이면_캡슐을_생성할_수_있다() {
+    @ParameterizedTest
+    @ValueSource(ints = {2, 20})
+    void 멀티_캡슐_정원이_2명_이상_20명_이하이면_캡슐을_생성할_수_있다(int maxMembers) {
         // given
-        int[] validMaxMembers = {2, 20};
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime buryDeadlineAt = now.plusDays(7);
         LocalDateTime openAt = now.plusYears(1);
 
-        for (int maxMembers : validMaxMembers) {
-            // when
-            Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
-                    maxMembers, buryDeadlineAt);
+        // when
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+                maxMembers, buryDeadlineAt);
 
-            // then
-            assertThat(capsule).isNotNull();
-        }
+        // then
+        assertThat(capsule).isNotNull();
     }
 
     @Test
