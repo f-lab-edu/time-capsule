@@ -8,7 +8,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Capsule {
+public abstract class Capsule {
 
     private final UUID id;
     private final String title;
@@ -29,8 +29,8 @@ public class Capsule {
     private LocalDateTime deletedAt;
     private UUID deletedBy;
 
-    private Capsule(UUID createdBy, String title, CapsuleMode mode, int maxMembers,
-                    LocalDateTime openAt, String placeName, double latitude, double longitude) {
+    Capsule(UUID createdBy, String title, CapsuleMode mode, int maxMembers,
+            LocalDateTime openAt, String placeName, double latitude, double longitude) {
         LocalDateTime createdAt = LocalDateTime.now();
 
         //검증
@@ -58,8 +58,14 @@ public class Capsule {
 
     public static Capsule single(UUID createdBy, String title, LocalDateTime openAt,
                                  String placeName, double latitude, double longitude) {
-        return new Capsule(createdBy, title, CapsuleMode.SINGLE, 1,
-                openAt, placeName, latitude, longitude);
+        return new SingleCapsule(createdBy, title, openAt, placeName, latitude, longitude);
+    }
+
+    public static Capsule multi(UUID createdBy, String title, LocalDateTime openAt,
+                                String placeName, double latitude, double longitude,
+                                int maxMembers, LocalDateTime buryDeadlineAt) {
+        return new MultiCapsule(createdBy, title, openAt, placeName, latitude, longitude,
+                maxMembers, buryDeadlineAt);
     }
 
     private static void validateTitle(String title) {
@@ -81,6 +87,19 @@ public class Capsule {
         if (openAt.isAfter(createdAt.plusYears(10))) {
             throw new IllegalArgumentException(ErrorCode.OPEN_AT_TOO_FAR_IN_FUTURE.getMessage());
         }
+    }
+
+    LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    boolean isCreatedBy(UUID userId) {
+        return createdBy.equals(userId);
+    }
+
+
+    public boolean isHost(UUID userId) {
+        return false;
     }
 
 }
