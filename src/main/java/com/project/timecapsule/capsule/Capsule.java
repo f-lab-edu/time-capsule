@@ -52,15 +52,6 @@ public abstract class Capsule {
         this.deletedBy = null;
     }
 
-    public static Capsule single(UUID createdBy, String title, LocalDateTime openAt, Location location) {
-        return new SingleCapsule(createdBy, title, openAt, location);
-    }
-
-    public static Capsule multi(UUID createdBy, String title, LocalDateTime openAt, Location location,
-                                int maxMembers, LocalDateTime buryDeadlineAt) {
-        return new MultiCapsule(createdBy, title, openAt, location, maxMembers, buryDeadlineAt);
-    }
-
     private static void validateTitle(String title) {
         if (!StringUtils.hasText(title)) {
             throw new IllegalArgumentException(ErrorCode.TITLE_REQUIRED.getMessage());
