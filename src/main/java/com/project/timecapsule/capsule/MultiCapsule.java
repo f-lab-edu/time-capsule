@@ -10,14 +10,19 @@ public final class MultiCapsule extends Capsule {
 
     private final LocalDateTime buryDeadlineAt;
 
-    MultiCapsule(UUID createdBy, String title, LocalDateTime openAt, Location location,
-                 int maxMembers, LocalDateTime buryDeadlineAt) {
+    private MultiCapsule(UUID createdBy, String title, LocalDateTime openAt, Location location,
+                         int maxMembers, LocalDateTime buryDeadlineAt) {
         super(createdBy, title, CapsuleMode.MULTI, maxMembers, openAt, location);
 
         validateMaxMembers(maxMembers);
         validateBuryDeadlineAt(buryDeadlineAt, openAt);
 
         this.buryDeadlineAt = buryDeadlineAt;
+    }
+
+    public static MultiCapsule create(UUID createdBy, String title, LocalDateTime openAt, Location location,
+                                      int maxMembers, LocalDateTime buryDeadlineAt) {
+        return new MultiCapsule(createdBy, title, openAt, location, maxMembers, buryDeadlineAt);
     }
 
     private static void validateMaxMembers(int maxMembers) {

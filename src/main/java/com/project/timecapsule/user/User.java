@@ -2,6 +2,8 @@ package com.project.timecapsule.user;
 
 import com.project.timecapsule.capsule.Capsule;
 import com.project.timecapsule.capsule.Location;
+import com.project.timecapsule.capsule.MultiCapsule;
+import com.project.timecapsule.capsule.SingleCapsule;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -21,11 +23,11 @@ public class User {
     }
 
     public Capsule createCapsule(String title, LocalDateTime openAt, Location location) {
-        return Capsule.single(id, title, openAt, location);
+        return SingleCapsule.create(id, title, openAt, location);
     }
 
     public Capsule createCapsule(String title, LocalDateTime openAt, Location location,
                                  int maxMembers, LocalDateTime buryDeadlineAt) {
-        return Capsule.multi(id, title, openAt, location, maxMembers, buryDeadlineAt);
+        return MultiCapsule.create(id, title, openAt, location, maxMembers, buryDeadlineAt);
     }
 }

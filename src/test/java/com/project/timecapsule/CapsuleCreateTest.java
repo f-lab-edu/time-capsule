@@ -44,7 +44,7 @@ class CapsuleCreateTest {
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
-            Capsule expected = Capsule.single(
+            Capsule expected = SingleCapsule.create(
                     singleUser.getId(), title, openAt, location);
 
             // when
@@ -71,7 +71,7 @@ class CapsuleCreateTest {
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
-            Capsule expected = Capsule.multi(
+            Capsule expected = MultiCapsule.create(
                     multiUser.getId(), title, openAt, location, maxMembers, buryDeadlineAt);
 
             // when
@@ -228,9 +228,9 @@ class CapsuleCreateTest {
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
-            Capsule singleExpected = Capsule.single(singleUser.getId(), "싱글 캡슐", openAt,
+            Capsule singleExpected = SingleCapsule.create(singleUser.getId(), "싱글 캡슐", openAt,
                     selectedLocation);
-            Capsule multiExpected = Capsule.multi(multiUser.getId(), "멀티 캡슐", openAt,
+            Capsule multiExpected = MultiCapsule.create(multiUser.getId(), "멀티 캡슐", openAt,
                     selectedLocation, 5, buryDeadlineAt);
 
             // when

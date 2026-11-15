@@ -7,7 +7,11 @@ import java.util.UUID;
 
 public final class SingleCapsule extends Capsule {
 
-    SingleCapsule(UUID createdBy, String title, LocalDateTime openAt, Location location) {
+    private SingleCapsule(UUID createdBy, String title, LocalDateTime openAt, Location location) {
         super(createdBy, title, CapsuleMode.SINGLE, 1, openAt, location);
+    }
+
+    public static SingleCapsule create(UUID createdBy, String title, LocalDateTime openAt, Location location) {
+        return new SingleCapsule(createdBy, title, openAt, location);
     }
 }
