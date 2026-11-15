@@ -10,10 +10,9 @@ public final class MultiCapsule extends Capsule {
 
     private final LocalDateTime buryDeadlineAt;
 
-    MultiCapsule(UUID createdBy, String title, LocalDateTime openAt,
-                 String placeName, double latitude, double longitude,
+    MultiCapsule(UUID createdBy, String title, LocalDateTime openAt, Location location,
                  int maxMembers, LocalDateTime buryDeadlineAt) {
-        super(createdBy, title, CapsuleMode.MULTI, maxMembers, openAt, placeName, latitude, longitude);
+        super(createdBy, title, CapsuleMode.MULTI, maxMembers, openAt, location);
 
         validateMaxMembers(maxMembers);
         validateBuryDeadlineAt(buryDeadlineAt, openAt);
