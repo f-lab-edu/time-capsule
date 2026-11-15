@@ -1,6 +1,7 @@
 package com.project.timecapsule;
 
 import com.project.timecapsule.capsule.Capsule;
+import com.project.timecapsule.capsule.Location;
 import com.project.timecapsule.capsule.MultiCapsule;
 import com.project.timecapsule.capsule.SingleCapsule;
 import com.project.timecapsule.user.User;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
@@ -24,11 +26,13 @@ class CapsuleCreateTest {
 
     private User singleUser;
     private User multiUser;
+    private Location location;
 
     @BeforeEach
     void beforeEach() {
         singleUser = new User("싱글유저", "password");
         multiUser = new User("멀티유저", "password");
+        location = new Location("서울숲", 37.55, 127.04);
     }
 
     @Test
@@ -36,18 +40,15 @@ class CapsuleCreateTest {
         // given
         String title = "싱글 캡슐";
         LocalDateTime openAt = LocalDateTime.now().plusYears(1);
-        String placeName = "서울숲";
-        double latitude = 37.5496;
-        double longitude = 127.0416;
         UUID fixedId = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
             Capsule expected = Capsule.single(
-                    singleUser.getId(), title, openAt, placeName, latitude, longitude);
+                    singleUser.getId(), title, openAt, location);
 
             // when
-            Capsule actual = singleUser.createCapsule(title, openAt, placeName, latitude, longitude);
+            Capsule actual = singleUser.createCapsule(title, openAt, location);
 
             // then
             assertThat(actual).isInstanceOf(SingleCapsule.class);
@@ -66,18 +67,15 @@ class CapsuleCreateTest {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime buryDeadlineAt = now.plusDays(7);
         LocalDateTime openAt = now.plusYears(1);
-        String placeName = "서울숲";
-        double latitude = 37.5496;
-        double longitude = 127.0416;
         UUID fixedId = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
             Capsule expected = Capsule.multi(
-                    multiUser.getId(), title, openAt, placeName, latitude, longitude, maxMembers, buryDeadlineAt);
+                    multiUser.getId(), title, openAt, location, maxMembers, buryDeadlineAt);
 
             // when
-            Capsule actual = multiUser.createCapsule(title, openAt, placeName, latitude, longitude,
+            Capsule actual = multiUser.createCapsule(title, openAt, location,
                     maxMembers, buryDeadlineAt);
 
             // then
@@ -97,8 +95,7 @@ class CapsuleCreateTest {
         LocalDateTime openAt = now.plusYears(1);
 
         // when
-        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲",
-                37.5496, 127.0416, 5, buryDeadlineAt);
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, location, 5, buryDeadlineAt);
 
         // then
         assertThat(capsule.isHost(multiUser.getId())).isTrue();
@@ -112,7 +109,7 @@ class CapsuleCreateTest {
         LocalDateTime openAt = LocalDateTime.now().plusYears(1);
 
         // when, then
-        assertThatThrownBy(() -> singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416))
+        assertThatThrownBy(() -> singleUser.createCapsule(title, openAt, location))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -123,7 +120,7 @@ class CapsuleCreateTest {
         LocalDateTime openAt = LocalDateTime.now().plusYears(1);
 
         // when
-        Capsule capsule = singleUser.createCapsule(title, openAt, "서울숲", 37.5496, 127.0416);
+        Capsule capsule = singleUser.createCapsule(title, openAt, location);
 
         // then
         assertThat(capsule).isNotNull();
@@ -144,7 +141,7 @@ class CapsuleCreateTest {
         }
 
         // when, then
-        assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416))
+        assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", openAt, location))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -156,7 +153,7 @@ class CapsuleCreateTest {
 
         for (LocalDateTime openAt : validOpenTimes) {
             // when
-            Capsule capsule = singleUser.createCapsule("싱글 캡슐", openAt, "서울숲", 37.5496, 127.0416);
+            Capsule capsule = singleUser.createCapsule("싱글 캡슐", openAt, location);
 
             // then
             assertThat(capsule).isNotNull();
@@ -173,7 +170,7 @@ class CapsuleCreateTest {
         for (LocalDateTime buryDeadlineAt : invalidBuryTimes) {
             // when, then
             assertThatThrownBy(() -> multiUser.createCapsule(
-                    "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                    "멀티 캡슐", openAt, location, 5, buryDeadlineAt))
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -187,7 +184,7 @@ class CapsuleCreateTest {
 
         // when, then
         assertThatThrownBy(() -> multiUser.createCapsule(
-                "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                "멀티 캡슐", openAt, location, 5, buryDeadlineAt))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -200,7 +197,7 @@ class CapsuleCreateTest {
 
         // when, then
         assertThatThrownBy(() -> multiUser.createCapsule(
-                "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, 5, buryDeadlineAt))
+                "멀티 캡슐", openAt, location, 5, buryDeadlineAt))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -212,19 +209,60 @@ class CapsuleCreateTest {
         LocalDateTime buryDeadlineAt = now.plusDays(14);
 
         // when
-        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, location,
                 5, buryDeadlineAt);
 
         // then
         assertThat(capsule).isNotNull();
     }
 
-    @Test
-    void 지도에서_선택한_위치로_장소를_지정할_수_있다() {
+    @ParameterizedTest
+    @CsvSource({"서울숲, 37.55, 127.04", ", 33.00, 124.50", ", 38.70, 132.00"})
+    void 지도에서_선택한_위치로_장소를_지정할_수_있다(String placeName, double latitude, double longitude) {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime openAt = now.plusYears(1);
+        LocalDateTime buryDeadlineAt = now.plusDays(7);
+        Location selectedLocation = new Location(placeName, latitude, longitude);
+        UUID fixedId = UUID.fromString("00000000-0000-0000-0000-000000000003");
+
+        try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
+            mockedUuid.when(UUID::randomUUID).thenReturn(fixedId);
+            Capsule singleExpected = Capsule.single(singleUser.getId(), "싱글 캡슐", openAt,
+                    selectedLocation);
+            Capsule multiExpected = Capsule.multi(multiUser.getId(), "멀티 캡슐", openAt,
+                    selectedLocation, 5, buryDeadlineAt);
+
+            // when
+            Capsule singleActual = singleUser.createCapsule("싱글 캡슐", openAt, selectedLocation);
+            Capsule multiActual = multiUser.createCapsule("멀티 캡슐", openAt, selectedLocation,
+                    5, buryDeadlineAt);
+
+            // then
+            assertThat(singleActual)
+                    .usingRecursiveComparison()
+                    .ignoringFields("createdAt")
+                    .isEqualTo(singleExpected);
+            assertThat(multiActual)
+                    .usingRecursiveComparison()
+                    .ignoringFields("createdAt")
+                    .isEqualTo(multiExpected);
+        }
     }
 
-    @Test
-    void 국내_지도_범위를_벗어난_위치로는_장소를_지정할_수_없다() {
+    @ParameterizedTest
+    @CsvSource({"32.99, 127.00", "38.71, 127.00", "37.50, 124.49", "37.50, 132.01"})
+    void 국내_지도_범위_밖의_장소로는_캡슐을_생성할_수_없다(double latitude, double longitude) {
+        // given
+        LocalDateTime now = LocalDateTime.now();
+
+        // when, then
+        assertThatThrownBy(() -> singleUser.createCapsule("싱글 캡슐", now.plusYears(1),
+                new Location(null, latitude, longitude)))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> multiUser.createCapsule("멀티 캡슐", now.plusYears(1),
+                new Location(null, latitude, longitude), 5, now.plusDays(7)))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @ParameterizedTest
@@ -237,7 +275,7 @@ class CapsuleCreateTest {
 
         // when, then
         assertThatThrownBy(() -> multiUser.createCapsule(
-                "멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416, maxMembers, buryDeadlineAt))
+                "멀티 캡슐", openAt, location, maxMembers, buryDeadlineAt))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -250,7 +288,7 @@ class CapsuleCreateTest {
         LocalDateTime openAt = now.plusYears(1);
 
         // when
-        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, "서울숲", 37.5496, 127.0416,
+        Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, location,
                 maxMembers, buryDeadlineAt);
 
         // then

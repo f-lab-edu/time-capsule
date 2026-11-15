@@ -22,7 +22,10 @@ public enum ErrorCode {
     BURY_DEADLINE_AT_REQUIRED(HttpStatus.BAD_REQUEST, "묻기 예정 시각을 입력해야 합니다."),
     BURY_DEADLINE_AT_NOT_IN_FUTURE(HttpStatus.BAD_REQUEST, "묻기 예정 시각은 캡슐 생성 시각보다 미래여야 합니다."),
     BURY_DEADLINE_AT_TOO_FAR_IN_FUTURE(HttpStatus.BAD_REQUEST, "묻기 예정 시각은 캡슐 생성 시각으로부터 14일 이내여야 합니다."),
-    BURY_DEADLINE_AT_NOT_BEFORE_OPEN_AT(HttpStatus.BAD_REQUEST, "묻기 예정 시각은 캡슐 오픈 시각보다 앞서야 합니다.");
+    BURY_DEADLINE_AT_NOT_BEFORE_OPEN_AT(HttpStatus.BAD_REQUEST, "묻기 예정 시각은 캡슐 오픈 시각보다 앞서야 합니다."),
+
+    // 캡슐 장소
+    LOCATION_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "장소는 국내 지도 선택 범위 내에서 지정해야 합니다.");
 
     private final HttpStatus status;
     private final String message;

@@ -17,9 +17,7 @@ public abstract class Capsule {
     private CapsuleStatus status;
     private final LocalDateTime openAt;
 
-    private final String placeName;
-    private final double latitude;
-    private final double longitude;
+    private final Location location;
 
     private final LocalDateTime createdAt;
     private final UUID createdBy;
@@ -30,7 +28,7 @@ public abstract class Capsule {
     private UUID deletedBy;
 
     Capsule(UUID createdBy, String title, CapsuleMode mode, int maxMembers,
-            LocalDateTime openAt, String placeName, double latitude, double longitude) {
+            LocalDateTime openAt, Location location) {
         LocalDateTime createdAt = LocalDateTime.now();
 
         //검증
@@ -43,9 +41,7 @@ public abstract class Capsule {
         this.maxMembers = maxMembers;
         this.status = CapsuleStatus.DRAFT;
         this.openAt = openAt;
-        this.placeName = placeName;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.location = location;
 
         this.createdAt = createdAt;
         this.createdBy = createdBy;
@@ -56,16 +52,13 @@ public abstract class Capsule {
         this.deletedBy = null;
     }
 
-    public static Capsule single(UUID createdBy, String title, LocalDateTime openAt,
-                                 String placeName, double latitude, double longitude) {
-        return new SingleCapsule(createdBy, title, openAt, placeName, latitude, longitude);
+    public static Capsule single(UUID createdBy, String title, LocalDateTime openAt, Location location) {
+        return new SingleCapsule(createdBy, title, openAt, location);
     }
 
-    public static Capsule multi(UUID createdBy, String title, LocalDateTime openAt,
-                                String placeName, double latitude, double longitude,
+    public static Capsule multi(UUID createdBy, String title, LocalDateTime openAt, Location location,
                                 int maxMembers, LocalDateTime buryDeadlineAt) {
-        return new MultiCapsule(createdBy, title, openAt, placeName, latitude, longitude,
-                maxMembers, buryDeadlineAt);
+        return new MultiCapsule(createdBy, title, openAt, location, maxMembers, buryDeadlineAt);
     }
 
     private static void validateTitle(String title) {
