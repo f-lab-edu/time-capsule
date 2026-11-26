@@ -1,5 +1,6 @@
 package com.project.timecapsule.capsule;
 
+import com.project.timecapsule.enums.CapsuleMemberRole;
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.ErrorCode;
 
@@ -17,7 +18,7 @@ public final class MultiCapsule extends Capsule {
         validateMaxMembers(maxMembers);
         validateBuryDeadlineAt(buryDeadlineAt, openAt);
 
-        registerMember(createdBy);
+        registerMember(createdBy, CapsuleMemberRole.CREATOR);
         this.buryDeadlineAt = buryDeadlineAt;
     }
 

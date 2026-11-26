@@ -1,5 +1,6 @@
 package com.project.timecapsule.capsule;
 
+import com.project.timecapsule.enums.CapsuleMemberRole;
 import com.project.timecapsule.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,9 +42,10 @@ class CapsuleMemberTest {
     }
 
     @Test
-    void 멀티_캡슐_생성자는_멤버로_등록된다() {
+    void 멀티_캡슐_생성자는_생성자_역할로_등록된다() {
         // given
-        CapsuleMember expectedMember = CapsuleMember.create(capsuleId, multiUser.getId(), 0, 5);
+        CapsuleMember expectedMember = CapsuleMember.create(
+                capsuleId, multiUser.getId(), 0, 5, CapsuleMemberRole.CREATOR);
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(capsuleId);
@@ -55,6 +57,30 @@ class CapsuleMemberTest {
             // then
             assertThat(capsule)
                     .extracting("members", collection(CapsuleMember.class))
+                    .singleElement()
+                    .usingRecursiveComparison()
+                    .isEqualTo(expectedMember);
+        }
+    }
+
+    @Test
+    void 추가로_등록한_멤버는_참여자_역할로_등록된다() {
+        // given
+        CapsuleMember expectedMember = CapsuleMember.create(
+                capsuleId, participantId, 1, 5, CapsuleMemberRole.PARTICIPANT);
+
+        try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
+            mockedUuid.when(UUID::randomUUID).thenReturn(capsuleId);
+            Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, location,
+                    5, buryDeadlineAt);
+
+            // when
+            capsule.registerMember(participantId, CapsuleMemberRole.PARTICIPANT);
+
+            // then
+            assertThat(capsule)
+                    .extracting("members", collection(CapsuleMember.class))
+                    .filteredOn("userId", participantId)
                     .singleElement()
                     .usingRecursiveComparison()
                     .isEqualTo(expectedMember);
@@ -81,11 +107,11 @@ class CapsuleMemberTest {
 
         for (int cnt = 1; cnt < maxMembers; cnt++) {
             UUID memberId = new UUID(1L, cnt);
-            capsule.registerMember(memberId);
+            capsule.registerMember(memberId, CapsuleMemberRole.PARTICIPANT);
         }
 
         // when, then
-        assertThatThrownBy(() -> capsule.registerMember(participantId))
+        assertThatThrownBy(() -> capsule.registerMember(participantId, CapsuleMemberRole.PARTICIPANT))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -94,11 +120,11 @@ class CapsuleMemberTest {
         // given
         Capsule capsule = multiUser.createCapsule("멀티 캡슐", openAt, location,
                 5, buryDeadlineAt);
-        capsule.registerMember(participantId);
+        capsule.registerMember(participantId, CapsuleMemberRole.PARTICIPANT);
         UUID sameUserId = UUID.fromString(participantId.toString());
 
         // when, then
-        assertThatThrownBy(() -> capsule.registerMember(sameUserId))
+        assertThatThrownBy(() -> capsule.registerMember(sameUserId, CapsuleMemberRole.PARTICIPANT))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

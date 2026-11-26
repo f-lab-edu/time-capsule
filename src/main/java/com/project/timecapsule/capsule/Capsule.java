@@ -1,5 +1,6 @@
 package com.project.timecapsule.capsule;
 
+import com.project.timecapsule.enums.CapsuleMemberRole;
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.CapsuleStatus;
 import com.project.timecapsule.enums.ErrorCode;
@@ -90,12 +91,12 @@ public abstract class Capsule {
         return createdAt;
     }
 
-    void registerMember(UUID userId) {
+    void registerMember(UUID userId, CapsuleMemberRole role) {
         if (members.stream().anyMatch(member -> member.isUser(userId))) {
             throw new IllegalStateException(ErrorCode.ALREADY_CAPSULE_MEMBER.getMessage());
         }
 
-        CapsuleMember member = CapsuleMember.create(id, userId, members.size(), maxMembers);
+        CapsuleMember member = CapsuleMember.create(id, userId, members.size(), maxMembers, role);
         members.add(member);
     }
 
