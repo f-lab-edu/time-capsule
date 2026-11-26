@@ -17,6 +17,10 @@ public enum ErrorCode {
 
     // 멀티 캡슐 정원
     MAX_MEMBERS_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "멀티 캡슐 정원은 방장을 포함해 2명 이상 20명 이하여야 합니다."),
+    CAPSULE_IS_FULL(HttpStatus.CONFLICT, "캡슐 정원이 가득 찼습니다."),
+
+    // 캡슐 멤버
+    ALREADY_CAPSULE_MEMBER(HttpStatus.CONFLICT, "이미 캡슐에 등록된 사용자입니다."),
 
     // 묻기 예정 시각
     BURY_DEADLINE_AT_REQUIRED(HttpStatus.BAD_REQUEST, "묻기 예정 시각을 입력해야 합니다."),

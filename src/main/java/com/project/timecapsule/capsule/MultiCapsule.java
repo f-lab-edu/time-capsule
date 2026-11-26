@@ -17,6 +17,7 @@ public final class MultiCapsule extends Capsule {
         validateMaxMembers(maxMembers);
         validateBuryDeadlineAt(buryDeadlineAt, openAt);
 
+        registerMember(createdBy);
         this.buryDeadlineAt = buryDeadlineAt;
     }
 
