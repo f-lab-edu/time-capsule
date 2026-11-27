@@ -1,7 +1,6 @@
 package com.project.timecapsule.capsule;
 
 import com.project.timecapsule.enums.CapsuleMemberRole;
-import com.project.timecapsule.enums.ErrorCode;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -18,16 +17,11 @@ public final class CapsuleMember {
         this.role = role;
     }
 
-    static CapsuleMember create(UUID capsuleId, UUID userId, int memberCount, int maxMembers,
-                                CapsuleMemberRole role) {
-        if (memberCount >= maxMembers) {
-            throw new IllegalStateException(ErrorCode.CAPSULE_IS_FULL.getMessage());
-        }
+    static CapsuleMember create(UUID capsuleId, UUID userId, CapsuleMemberRole role) {
         return new CapsuleMember(capsuleId, userId, role);
     }
 
     boolean isUser(UUID userId) {
         return Objects.equals(this.userId, userId);
     }
-
 }

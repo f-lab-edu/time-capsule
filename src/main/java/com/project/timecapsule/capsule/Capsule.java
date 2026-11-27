@@ -92,11 +92,17 @@ public abstract class Capsule {
     }
 
     void registerMember(UUID userId, CapsuleMemberRole role) {
+        //같은 유저가 이미 등록되어있는지 확인
         if (members.stream().anyMatch(member -> member.isUser(userId))) {
             throw new IllegalStateException(ErrorCode.ALREADY_CAPSULE_MEMBER.getMessage());
         }
 
-        CapsuleMember member = CapsuleMember.create(id, userId, members.size(), maxMembers, role);
+        //캡슐 정원 확인
+        if (members.size() >= maxMembers) {
+            throw new IllegalStateException(ErrorCode.CAPSULE_IS_FULL.getMessage());
+        }
+
+        CapsuleMember member = CapsuleMember.create(id, userId, role);
         members.add(member);
     }
 

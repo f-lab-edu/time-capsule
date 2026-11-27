@@ -45,7 +45,7 @@ class CapsuleMemberTest {
     void 멀티_캡슐_생성자는_생성자_역할로_등록된다() {
         // given
         CapsuleMember expectedMember = CapsuleMember.create(
-                capsuleId, multiUser.getId(), 0, 5, CapsuleMemberRole.CREATOR);
+                capsuleId, multiUser.getId(), CapsuleMemberRole.CREATOR);
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(capsuleId);
@@ -67,7 +67,7 @@ class CapsuleMemberTest {
     void 추가로_등록한_멤버는_참여자_역할로_등록된다() {
         // given
         CapsuleMember expectedMember = CapsuleMember.create(
-                capsuleId, participantId, 1, 5, CapsuleMemberRole.PARTICIPANT);
+                capsuleId, participantId, CapsuleMemberRole.PARTICIPANT);
 
         try (MockedStatic<UUID> mockedUuid = mockStatic(UUID.class)) {
             mockedUuid.when(UUID::randomUUID).thenReturn(capsuleId);
