@@ -1,11 +1,14 @@
 package com.project.timecapsule.capsule;
 
+import com.project.timecapsule.enums.CapsuleMemberRole;
 import com.project.timecapsule.enums.CapsuleMode;
 import com.project.timecapsule.enums.CapsuleStatus;
 import com.project.timecapsule.enums.ErrorCode;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public abstract class Capsule {
@@ -26,6 +29,8 @@ public abstract class Capsule {
     private boolean isDeleted;
     private LocalDateTime deletedAt;
     private UUID deletedBy;
+
+    private final Set<CapsuleMember> members = new HashSet<>();
 
     Capsule(UUID createdBy, String title, CapsuleMode mode, int maxMembers,
             LocalDateTime openAt, Location location) {
@@ -84,6 +89,21 @@ public abstract class Capsule {
 
     LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    void registerMember(UUID userId, CapsuleMemberRole role) {
+        //같은 유저가 이미 등록되어있는지 확인
+        if (members.stream().anyMatch(member -> member.isUser(userId))) {
+            throw new IllegalStateException(ErrorCode.ALREADY_CAPSULE_MEMBER.getMessage());
+        }
+
+        //캡슐 정원 확인
+        if (members.size() >= maxMembers) {
+            throw new IllegalStateException(ErrorCode.CAPSULE_IS_FULL.getMessage());
+        }
+
+        CapsuleMember member = CapsuleMember.create(id, userId, role);
+        members.add(member);
     }
 
     boolean isCreatedBy(UUID userId) {
